@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jsonlinetypes"
+version = "0.2.0"
+description = "Dict/List backed by JSONL files for large datasets - memory efficient alternatives to dict/list"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "JsonLineTypes Contributors"}
+]
+keywords = ["jsonl", "dict", "list", "large datasets", "memory efficient"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/jsonlinetypes/jsonlinetypes"
+Documentation = "https://github.com/jsonlinetypes/jsonlinetypes#readme"
+Repository = "https://github.com/jsonlinetypes/jsonlinetypes"
+"Bug Tracker" = "https://github.com/jsonlinetypes/jsonlinetypes/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["jsonlinetypes*"]
