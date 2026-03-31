@@ -141,11 +141,6 @@ When you delete or update a record:
 
 ## Performance
 
-### Memory Usage
-- Only index is kept in memory
-- ~100 bytes per record (regardless of data size)
-- 10 million records ≈ 1GB RAM
-
 ### Benchmark Results
 *(Tested on typical dataset of 1000 records)*
 
@@ -157,6 +152,23 @@ When you delete or update a record:
 | Delete 1000 items | < 1s |
 | Compact | < 0.5s |
 
+### Memory Usage
+- Only index is kept in memory
+- ~100 bytes per record (regardless of data size)
+- 10 million records ≈ 1GB RAM
+
+### Thread Safety Performance
+
+| Version | Performance Overhead | Use Case |
+|---------|---------------------|----------|
+| JLFDict (unsafe) | 0% | Single-threaded applications |
+| ThreadSafeJLFDict (single op) | 3-8% | Multi-threaded, few operations |
+| ThreadSafeJLFDict (batch) | 0-3% | Multi-threaded, batch operations |
+
+**Key Finding**: Thread-safe version has minimal performance overhead (2.8% average) due to disk I/O being the main bottleneck.
+
+For detailed performance analysis, see [PERFORMANCE.md](PERFORMANCE.md).
+
 ### Comparison with dict/list
 
 | Feature | dict/list | JLFDict/JLFList |
@@ -167,6 +179,7 @@ When you delete or update a record:
 | Write Speed | Faster | Fast (append + index) |
 | Persistence | Manual | Automatic |
 | Compact | N/A | Required periodically |
+| Thread Safety | N/A | Not safe by default |
 
 ## API Reference
 
@@ -227,7 +240,6 @@ JLFList(file_path, auto_save_index=True)
 
 - No `insert()` for JLFList (not supported in append-only format)
 - Modify operations append to file (call `compact()` periodically)
-- Not thread-safe (use locks in multi-threaded environments)
 - Requires disk I/O (slower than in-memory dict/list)
 
 ## Requirements
@@ -250,6 +262,83 @@ pytest tests/
 pytest tests/test_jlf_dict.py
 ```
 
+## Thread Safety
+
+**JLFDict and JLFList are now thread-safe by default.**
+
+All operations are automatically protected with a reentrant lock (RLock), making them safe to use in multi-threaded environments without any additional locking.
+
+### Basic Usage
+
+```python
+from jsonlinetypes import JLFDict, JLFList
+
+# Thread-safe dict
+d = JLFDict("data.jsonl", "id")
+
+# All operations are automatically thread-safe
+d["key1"] = {"id": "key1", "value": "v1"}
+value = d["key1"]
+
+# Thread-safe list
+lst = JLFList("items.jsonl")
+lst.append({"name": "Alice"})
+```
+
+### Batch Operations (Optimized)
+
+For better performance with multiple consecutive operations, use the context manager to lock only once:
+
+```python
+# Locks only once for all operations inside
+with d:
+    d["key1"] = value1
+    d["key2"] = value2
+    for i in range(100):
+        d[f"key{i}"] = value
+
+with lst:
+    for i in range(100):
+        lst.append({"name": f"Person{i}"})
+```
+
+### Multi-threaded Example
+
+```python
+import threading
+from jsonlinetypes import JLFDict
+
+d = JLFDict("data.jsonl", "id")
+
+def worker(worker_id, num_items):
+    for i in range(num_items):
+        d[f"key_{worker_id}_{i}"] = {"id": f"key_{worker_id}_{i}", "value": i}
+
+# Multiple threads can safely access the same JLFDict
+threads = []
+for i in range(5):
+    t = threading.Thread(target=worker, args=(i, 100))
+    threads.append(t)
+    t.start()
+
+for t in threads:
+    t.join()
+
+print(f"Total items: {len(d)}")  # 500 items, no data loss
+```
+
+### Performance
+
+JLFDict and JLFList have minimal performance overhead for thread safety:
+
+- **Single operation**: ~3-8% overhead (disk I/O is the main bottleneck)
+- **Batch operations**: ~0-3% overhead when using context manager
+- **Single-threaded use**: Still safe, with minimal overhead
+
+For detailed performance analysis, see [PERFORMANCE.md](PERFORMANCE.md).
+
+Run tests: `python test_thread_safety.py`
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -271,8 +360,12 @@ Your Name - your.email@example.com
 
 - [COMPARISON.md](COMPARISON.md) - Compare with similar libraries (shelve, tinydb, pandas, etc.)
 - [USABILITY.md](USABILITY.md) - Usability comparison and ease of use analysis
+- [INDEX_RECOVERY.md](INDEX_RECOVERY.md) - Index corruption recovery and data restoration
+- [THREAD_SAFETY.md](THREAD_SAFETY.md) - Thread safety guide
+- [PERFORMANCE.md](PERFORMANCE.md) - Performance comparison and benchmarks
 - [memory_demo.py](memory_demo.py) - Run memory usage demonstration
 - [usability_demo.py](usability_demo.py) - Run usability comparison demonstration
+- [benchmark_safety.py](benchmark_safety.py) - Run performance benchmarks
 - [jsonlines](https://jsonlines.org/) - JSON Lines specification
 - [pandas](https://pandas.pydata.org/) - For data analysis (memory-efficient modes)
 

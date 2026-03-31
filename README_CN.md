@@ -225,7 +225,6 @@ JLFList(file_path, auto_save_index=True)
 
 - JLFList 不支持 `insert()`（仅追加格式不支持）
 - 修改操作会追加到文件中（定期调用 `compact()`）
-- 不是线程安全的（在多线程环境中使用锁）
 - 需要磁盘 I/O（比内存中的 dict/list 慢）
 
 ## 要求
@@ -248,6 +247,97 @@ pytest tests/
 pytest tests/test_jlf_dict.py
 ```
 
+## 线程安全
+
+**JLFDict 和 JLFList 现在默认就是线程安全的。**
+
+所有操作都自动受可重入锁（RLock）保护，使其在多线程环境中使用安全，无需额外加锁。
+
+### 基本使用
+
+```python
+from jsonlinetypes import JLFDict, JLFList
+
+# 线程安全的字典
+d = JLFDict("data.jsonl", "id")
+
+# 所有操作自动线程安全
+d["key1"] = {"id": "key1", "value": "v1"}
+value = d["key1"]
+
+# 线程安全的列表
+lst = JLFList("items.jsonl")
+lst.append({"name": "Alice"})
+```
+
+### 批量操作（优化性能）
+
+对于多个连续操作，使用上下文管理器只需锁定一次以获得更好的性能：
+
+```python
+# 内部所有操作只锁一次
+with d:
+    d["key1"] = value1
+    d["key2"] = value2
+    for i in range(100):
+        d[f"key{i}"] = value
+
+with lst:
+    for i in range(100):
+        lst.append({"name": f"Person{i}"})
+```
+
+### 多线程示例
+
+```python
+import threading
+from jsonlinetypes import JLFDict
+
+d = JLFDict("data.jsonl", "id")
+
+def worker(worker_id, num_items):
+    for i in range(num_items):
+        d[f"key_{worker_id}_{i}"] = {"id": f"key_{worker_id}_{i}", "value": i}
+
+# 多个线程可以安全地访问同一个 JLFDict
+threads = []
+for i in range(5):
+    t = threading.Thread(target=worker, args=(i, 100))
+    threads.append(t)
+    t.start()
+
+for t in threads:
+    t.join()
+
+print(f"总项目数: {len(d)}")  # 500 个项目，无数据丢失
+```
+
+### 性能
+
+JLFDict 和 JLFList 的线程安全性能开销很小：
+
+- **单次操作**：约 3-8% 开销（磁盘 I/O 是主要瓶颈）
+- **批量操作**：使用上下文管理器时约 0-3% 开销
+- **单线程使用**：仍然安全，开销极小
+
+详细性能分析，请查看 [PERFORMANCE.md](PERFORMANCE.md)。
+
+运行测试：`python test_thread_safety.py`
+
+## 性能
+
+### 线程安全性能开销
+
+| 版本 | 性能下降 | 使用场景 |
+|---------|---------------------|----------|
+| JLFDict（不安全） | 0% | 单线程应用 |
+| ThreadSafeJLFDict（单次操作） | 3-8% | 多线程少量操作 |
+| ThreadSafeJLFDict（批量操作） | 0-3% | 多线程批量操作 |
+
+**关键发现**：由于磁盘 I/O 是主要瓶颈，线程安全版本的性能开销极小（平均 2.8%）。
+
+详细性能分析，请查看 [PERFORMANCE.md](PERFORMANCE.md)。
+
 ## 贡献
 
 欢迎贡献！请随时提交 Pull Request。
@@ -269,8 +359,12 @@ Your Name - your.email@example.com
 
 - [COMPARISON.md](COMPARISON.md) - 与类似库对比（shelve, tinydb, pandas 等）
 - [USABILITY.md](USABILITY.md) - 易用性对比分析
+- [INDEX_RECOVERY.md](INDEX_RECOVERY.md) - 索引损坏恢复与数据恢复
+- [THREAD_SAFETY.md](THREAD_SAFETY.md) - 线程安全指南
+- [PERFORMANCE.md](PERFORMANCE.md) - 性能对比分析
 - [memory_demo.py](memory_demo.py) - 运行内存使用演示
 - [usability_demo.py](usability_demo.py) - 运行易用性对比演示
+- [benchmark_safety.py](benchmark_safety.py) - 运行性能对比测试
 - [jsonlines](https://jsonlines.org/) - JSON Lines 规范
 - [pandas](https://pandas.pydata.org/) - 用于数据分析（内存高效模式）
 
