@@ -239,3 +239,7 @@ class JLFDict(MutableMapping):
     def __exit__(self, *args):
         """Exit context manager and release lock"""
         self._lock.release()
+
+    def to_dict(self):
+        """Convert JLFDict to a regular Python dict for JSON serialization"""
+        return dict(self.items())

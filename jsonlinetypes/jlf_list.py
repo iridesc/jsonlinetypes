@@ -235,3 +235,7 @@ class JLFList(MutableSequence):
     def __exit__(self, *args):
         """Exit context manager and release lock"""
         self._lock.release()
+
+    def to_list(self):
+        """Convert JLFList to a regular Python list for JSON serialization"""
+        return list(self)
