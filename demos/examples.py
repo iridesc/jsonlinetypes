@@ -13,29 +13,29 @@ print("=" * 60)
 
 # Example 1: JLFDict
 print("\n--- Example 1: JLFDict ---")
-temp_file = tempfile.mktemp(suffix='.jsonl')
+temp_file = tempfile.mkstemp(suffix='.jsonl')[1]
 
 try:
     # Create a dictionary backed by JSONL
     d = JLFDict(temp_file, "user_id")
     
     # Add data
-    d[1] = {"user_id": 1, "name": "Alice", "age": 30}
-    d[2] = {"user_id": 2, "name": "Bob", "age": 25}
-    d[3] = {"user_id": 3, "name": "Charlie", "age": 35}
+    d["a"] = {"user_id": "a", "name": "Alice", "age": 30}
+    d["b"] = {"user_id": "b", "name": "Bob", "age": 25}
+    d["c"] = {"user_id": "c", "name": "Charlie", "age": 35}
     
     print(f"Added 3 users, total: {len(d)}")
     
     # Access data
-    print(f"User 1: {d.get(1)}")
+    print(f"User a: {d.get('a')}")
     
     # Update data
-    d[1] = {"user_id": 1, "name": "Alice Smith", "age": 31}
-    print(f"Updated user 1: {d[1]}")
+    d["a"] = {"user_id": "a", "name": "Alice Smith", "age": 31}
+    print(f"Updated user a: {d['a']}")
     
     # Delete data
-    del d[2]
-    print(f"After deleting user 2, total: {len(d)}")
+    del d["b"]
+    print(f"After deleting user b, total: {len(d)}")
     
     # Iterate
     print("\nAll users:")
@@ -43,7 +43,7 @@ try:
         print(f"  {user_id}: {user['name']} (age {user['age']})")
     
     # Batch update
-    d.update({4: {"user_id": 4, "name": "David", "age": 28}})
+    d.update({"d": {"user_id": "d", "name": "David", "age": 28}})
     print(f"\nAfter batch update, total: {len(d)}")
     
     # Cleanup
@@ -69,7 +69,8 @@ try:
     lst.append({"name": "Bob", "score": 88})
     lst.append({"name": "Charlie", "score": 92})
     
-    print(f"Added 3 students, total: {len(lst)}")
+    print(f"Added 3 students, total: {len(lst)} {lst=}")
+    print(lst)
     
     # Batch add
     lst.extend([
@@ -77,6 +78,7 @@ try:
         {"name": "Eve", "score": 90}
     ])
     print(f"After extend, total: {len(lst)}")
+    print(lst)
     
     # Access by index
     print(f"\nFirst student: {lst[0]}")
@@ -90,6 +92,7 @@ try:
     del lst[1]
     print(f"After deleting index 1, total: {len(lst)}")
     print(f"Now at index 1: {lst[1]}")
+    print(lst)
     
     # Pop
     removed = lst.pop()
@@ -104,7 +107,7 @@ try:
     # Reverse
     lst.reverse()
     print(f"\nAfter reverse, first student: {lst[0]['name']}")
-    
+    print(lst)
     # Cleanup
     lst.clear()
     print(f"After clear, total: {len(lst)}")
@@ -118,3 +121,5 @@ finally:
 print("\n" + "=" * 60)
 print("Examples completed successfully!")
 print("=" * 60)
+
+

@@ -2,7 +2,7 @@
 
 **Dict/List backed by JSONL files for large datasets - memory efficient alternatives to dict/list**
 
-**中文说明见 [README_CN.md](README_CN.md)**
+**中文说明见 [docs/README_CN.md](docs/README_CN.md)**
 
 ## Overview
 
@@ -167,7 +167,7 @@ When you delete or update a record:
 
 **Key Finding**: Thread-safe version has minimal performance overhead (2.8% average) due to disk I/O being the main bottleneck.
 
-For detailed performance analysis, see [PERFORMANCE.md](PERFORMANCE.md).
+For detailed performance analysis, see [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
 ### Comparison with dict/list
 
@@ -335,9 +335,9 @@ JLFDict and JLFList have minimal performance overhead for thread safety:
 - **Batch operations**: ~0-3% overhead when using context manager
 - **Single-threaded use**: Still safe, with minimal overhead
 
-For detailed performance analysis, see [PERFORMANCE.md](PERFORMANCE.md).
+For detailed performance analysis, see [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
-Run tests: `python test_thread_safety.py`
+Run tests: `python tests/test_thread_safety.py`
 
 ## Contributing
 
@@ -358,14 +358,14 @@ Your Name - your.email@example.com
 
 ## See Also
 
-- [COMPARISON.md](COMPARISON.md) - Compare with similar libraries (shelve, tinydb, pandas, etc.)
-- [USABILITY.md](USABILITY.md) - Usability comparison and ease of use analysis
-- [INDEX_RECOVERY.md](INDEX_RECOVERY.md) - Index corruption recovery and data restoration
-- [THREAD_SAFETY.md](THREAD_SAFETY.md) - Thread safety guide
-- [PERFORMANCE.md](PERFORMANCE.md) - Performance comparison and benchmarks
-- [memory_demo.py](memory_demo.py) - Run memory usage demonstration
-- [usability_demo.py](usability_demo.py) - Run usability comparison demonstration
-- [benchmark_safety.py](benchmark_safety.py) - Run performance benchmarks
+- [docs/COMPARISON.md](docs/COMPARISON.md) - Compare with similar libraries (shelve, tinydb, pandas, etc.)
+- [docs/USABILITY.md](docs/USABILITY.md) - Usability comparison and ease of use analysis
+- [docs/INDEX_RECOVERY.md](docs/INDEX_RECOVERY.md) - Index corruption recovery and data restoration
+- [docs/THREAD_SAFETY.md](docs/THREAD_SAFETY.md) - Thread safety guide
+- [docs/PERFORMANCE.md](docs/PERFORMANCE.md) - Performance comparison and benchmarks
+- [demos/memory_demo.py](demos/memory_demo.py) - Run memory usage demonstration
+- [demos/usability_demo.py](demos/usability_demo.py) - Run usability comparison demonstration
+- [demos/benchmark_safety.py](demos/benchmark_safety.py) - Run performance benchmarks
 - [jsonlines](https://jsonlines.org/) - JSON Lines specification
 - [pandas](https://pandas.pydata.org/) - For data analysis (memory-efficient modes)
 
